@@ -1,0 +1,57 @@
+--Create table, schema and database--
+
+create database New_1;
+
+create schema cinema_new;
+
+create table film_new (
+	film_id serial primary key,
+	film_name varchar(255) not null,
+	film_year integer check(film_year > 0),
+	film_rental_rate numeric(4,2) default 0.99,
+	film_duration integer not null check(film_duration > 0)
+	);
+
+--insert some data--
+
+insert into film_new (film_name, film_year, film_rental_rate, film_duration)
+select unnest(array['The Shawshank Redemption', 'The Green Mile', 'Back to the Future', 'Forrest Gump', 'Schindler’s List']),
+unnest(array[1994, 1999, 1985, 1994, 1993]),
+unnest(array[2.99, 0.99, 1.99, 2.99, 3.99]),
+unnest(array[142, 189, 116, 142, 195]);
+
+--insert new data--
+
+insert into film_new(film_name, film_year, film_rental_rate, film_duration)
+values 
+	('Gladiator', 2000, 2.99, 171);
+
+--insert some querys for exemple--
+
+select initcap(film_name) as "Фильм", concat(film_year, film_duration) as new_column from film_new fn 
+where film_name ilike '%s%';
+
+select initcap(film_name) as "Фильм", concat(film_year, film_duration) as new_column from film_new fn 
+order by film_name desc
+limit 2
+offset 2;
+
+select *, count(fn.film_name) as "count",
+	row_number() over (partition by fn.film_rental_rate) from film_new fn 
+group by fn.film_id	
+order by fn.film_year;
+
+select fn.film_name, fn2.film_name 
+from film_new fn, film_new fn2;
+
+select fn.film_name, fn.film_year, fn2.film_rental_rate, fn2.film_duration, round(fn.film_rental_rate) as rounding 
+from film_new fn
+join film_new fn2 on fn.film_id = fn2.film_id; 
+
+--Warning! Below we will delete our table, schema and database!--
+
+drop table film_new;
+
+drop schema cinema_new;
+
+drop database New_1;
